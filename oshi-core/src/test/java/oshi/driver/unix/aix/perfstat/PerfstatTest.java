@@ -31,6 +31,25 @@ import com.sun.jna.platform.unix.aix.Perfstat.perfstat_protocol_t;
 @EnabledOnOs(OS.AIX)
 class PerfstatTest {
     @Test
+    void printPerfConfig() {
+        perfstat_partition_config_t config = PerfstatConfig.queryConfig();
+
+        // Processors in pool this VM belongs to
+        System.err.println("Processors: " + config.numProcessors.online);
+
+        // Processor SMT Mode (2, 4 or 8) for this VM
+        System.err.println("SMT Threads: " + config.smtthreads);
+
+        // Power Cores Allocated (called Virtual Processors / Virtual CPU's)
+        System.err.println("vCPUs: " + config.vcpus.online);
+
+        // Logical Processors (seen by OS) = Cores * Threads
+        System.err.println("lCPUs: " + config.lcpus);
+        int lcpu = (int) (config.vcpus.online * config.smtthreads);
+        assert(config.lcpus == lcpu);
+    }
+
+    @Test
     void testQueryConfig() {
         perfstat_partition_config_t config = PerfstatConfig.queryConfig();
         assertThat("Should have at least one logical CPU", config.lcpus, greaterThan(0));
