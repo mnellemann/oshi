@@ -30,20 +30,25 @@ import com.sun.jna.platform.unix.aix.Perfstat.perfstat_protocol_t;
 
 @EnabledOnOs(OS.AIX)
 class PerfstatTest {
+
+    // mvn test -Dtest="oshi.driver.unix.aix.perfstat.PerfstatTest#printPerfConfig"
     @Test
     void printPerfConfig() {
+
         perfstat_partition_config_t config = PerfstatConfig.queryConfig();
 
-        // Processors in pool this VM belongs to
+        // Processors in the shared-processor-pool this VM/LPAR belongs to - not needed
         System.err.println("Processors: " + config.numProcessors.online);
 
-        // Processor SMT Mode (2, 4 or 8) for this VM
+        // Processor SMT Mode (2, 4 or 8) for this specific VM/LPAR - not needed
         System.err.println("SMT Threads: " + config.smtthreads);
 
-        // Power Cores Allocated (called Virtual Processors / Virtual CPU's)
+        // Power cores allocated to this specific VM/LPAR
+        // This is what we want for: getPhysicalProcessorCount()
         System.err.println("vCPUs: " + config.vcpus.online);
 
-        // Logical Processors (seen by OS) = Cores * Threads
+        // Logical processors (what is seen by OS) = cores * threads
+        // This is what we want for: getLogicalProcessorCount();
         System.err.println("lCPUs: " + config.lcpus);
         int lcpu = (int) (config.vcpus.online * config.smtthreads);
         assert(config.lcpus == lcpu);
